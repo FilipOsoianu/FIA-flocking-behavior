@@ -106,7 +106,31 @@
         elif self.pos[1] < 0:
             self.pos[1] =  CANVAS_RES[1]
 
+    def move_to_ship(self, ship_pozition):
+        move_vectore = np.subtract(ship_pozition, self.pos)
+        return normalize_vector(move_vectore)
         
+    def collision_avoidance(self, group):
+        max_see_ahead = self.radius * 3
+        ahead = self.pos + normalize_vector(self.vel) * max_see_ahead
+        avoidance_force = np.array([0, 0])
+        nearest_obstacle = None
+        ahead2 = self.pos + normalize_vector(self.vel) * max_see_ahead * 0.5
+        for obstacle in group:
+            radius = obstacle.radius       # store initial obj radius
+            if radius < 10:                #  if radius is too small it will be hard to detect
+                obstacle.radius = 40       #  increase radius
+            collision = dist(ahead, obstacle.pos) <= obstacle.radius or dist(ahead2, obstacle.pos) <= obstacle.radius
+            if collision and (
+                    nearest_obstacle is None or
+                    dist(self.pos, obstacle.pos) < dist(self.pos, nearest_obstacle.pos)):
+                nearest_obstacle = obstacle
+            obstacle.radius = radius        # restore initial obj radius
+        if nearest_obstacle is not None:
+            avoidance_force = ahead - nearest_obstacle.pos
+            avoidance_force = normalize_vector(avoidance_force) * 3
+        self.vel += avoidance_force
+        return avoidance_force
 
 def norm(self):
     p=2
@@ -130,3 +154,9 @@ def div(self, number):
     
 def mul(self, number):
     return [x * number for x in self]
+
+
+def normalize_vector(vector):
+    norm = np.linalg.norm(vector)
+    normalized_vector = vector / norm
+    return normalized_vector
