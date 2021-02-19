@@ -2,12 +2,13 @@
         alignment = self.align(boids)
         cohesion = self.cohesion(boids)        
         separation = self.separation(boids)
-
-  
-
+        move =  self.move_to_ship(my_ship.pos)
+        collision_avoidance = self.collision_avoidance(missile_group)
         self.acc =sum( self.acc, alignment)       
         self.acc =sum( self.acc, cohesion)        
         self.acc =sum( self.acc, separation)
+        self.acc =sum( self.acc, move)
+        self.acc =sum( self.acc, collision_avoidance)
         
     def updateRock(self):
         self.pos = sum(self.pos, self.vel)            
